@@ -31,6 +31,9 @@ public class Biblioteca{
     private String midia;
 
     @Column(length = 1000)
+    private String linkDrive;
+
+    @Column(length = 1000)
     private String imagem;
 
     @Column(length = 1000)
@@ -38,7 +41,7 @@ public class Biblioteca{
 
     public Biblioteca() {}
 
-    public Biblioteca(String codigo, String titulo, String autor, int ano, String referencia, String link, String tipo, String midia, String imagem, String observacoes) {
+    public Biblioteca(String codigo, String titulo, String autor, int ano, String referencia, String link, String tipo, String midia, String linkDrive, String imagem, String observacoes) {
         this.codigo = codigo;
         this.titulo = titulo;
         this.autor = autor;
@@ -47,6 +50,7 @@ public class Biblioteca{
         this.link = link;
         this.tipo = tipo;
         this.midia = midia;
+        this.linkDrive = linkDrive;
         this.imagem = imagem;
         this.observacoes = observacoes;
     }
@@ -134,6 +138,14 @@ public class Biblioteca{
         this.observacoes = observacoes;
     }
 
+    public String getLinkDrive() {
+        return linkDrive;
+    }
+
+    public void setLinkDrive(String linkDrive) {
+        this.linkDrive = linkDrive;
+    }
+
     public static class BibliotecaBuilder {
         private int ano;
         private String autor;
@@ -144,6 +156,7 @@ public class Biblioteca{
         private String referencia;
         private String tipo;
         private String titulo;
+        private String observacoes;
 
         public BibliotecaBuilder() {}
 
@@ -189,6 +202,11 @@ public class Biblioteca{
 
         public BibliotecaBuilder titulo(String titulo) {
             this.titulo = titulo;
+            return this;
+        }
+
+        public BibliotecaBuilder observacoes(String observacoes){
+            this.observacoes = observacoes;
             return this;
         }
 

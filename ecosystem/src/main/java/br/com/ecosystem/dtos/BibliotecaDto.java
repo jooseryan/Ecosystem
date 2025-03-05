@@ -9,12 +9,13 @@ public class BibliotecaDto {
     private String link;
     private String tipo;
     private String midia;
+    private String linkDrive;
     private String imagem;
     private String observacoes;
 
     public BibliotecaDto() {}
 
-    public BibliotecaDto(String codigo, String titulo, String autor, int ano, String referencia, String link, String tipo, String midia, String imagem, String observacoes) {
+    public BibliotecaDto(String codigo, String titulo, String autor, int ano, String referencia, String link, String tipo, String midia, String linkDrive, String imagem, String observacoes) {
         this.codigo = codigo;
         this.titulo = titulo;
         this.autor = autor;
@@ -23,6 +24,7 @@ public class BibliotecaDto {
         this.link = link;
         this.tipo = tipo;
         this.midia = midia;
+        this.linkDrive = linkDrive;
         this.imagem = imagem;
         this.observacoes = observacoes;
     }
@@ -105,5 +107,13 @@ public class BibliotecaDto {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public String getLinkDrive() {
+        return linkDrive;
+    }
+
+    public void setLinkDrive(String linkDrive) {
+        this.linkDrive = linkDrive;
     }
 }
