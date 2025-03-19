@@ -27,11 +27,11 @@ public class EcoSystemApplication {
 //		}
 //
 //		enviarArquivo();
-	}
+//	}
 //
 //	private static void enviarArquivo() {
 //		RestTemplate restTemplate = new RestTemplate();
-//		String filePath = "C:\\Users\\joser\\Desktop\\Cópia de Cópia de Acervo Paleontologia PB - Bibliografia (1).csv";
+//		String filePath = "C:\\Users\\joser\\Downloads\\Cópia de Acervo Paleontologia PB - Bibliografia.csv";
 //		File file = new File(filePath);
 //
 //		if (!file.exists()) {
@@ -49,7 +49,7 @@ public class EcoSystemApplication {
 //
 //		HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 //
-//		String url = "http://localhost:8080/biblioteca/upload";
+//		String url = "http://localhost:8080/biblioteca/cadastrar";
 //
 //		try {
 //			ResponseEntity<String> response = restTemplate.exchange(
@@ -60,5 +60,5 @@ public class EcoSystemApplication {
 //		} catch (Exception e) {
 //			System.err.println("Erro ao enviar arquivo: " + e.getMessage());
 //		}
-//	}
+	}
 }

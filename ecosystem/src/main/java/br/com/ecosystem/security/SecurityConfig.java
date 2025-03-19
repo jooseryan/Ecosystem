@@ -32,10 +32,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/usuarios/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/usuarios/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/usuarios/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/usuarios").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Coloca o filtro JWT antes do filtro de autenticação padrão
-                .httpBasic(withDefaults()); // Configuração de autenticação básica (caso necessário)
+                .httpBasic(withDefaults());
 
         return http.build();
     }

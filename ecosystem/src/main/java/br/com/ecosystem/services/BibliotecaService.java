@@ -3,6 +3,7 @@ package br.com.ecosystem.services;
 import br.com.ecosystem.dtos.BibliotecaDto;
 import br.com.ecosystem.models.Biblioteca;
 import br.com.ecosystem.repositories.BibliotecaRepository;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.opencsv.CSVReader;
@@ -10,10 +11,7 @@ import com.opencsv.CSVReader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,14 +36,32 @@ public class BibliotecaService {
 
             String[] linha;
             while ((linha = csvReader.readNext()) != null) {
-                String nomeSobrenome = linha[2];
-                String nomeFormatado = formatarNomesAutores(nomeSobrenome);
+                // Log para verificar o conteúdo de cada linha
+                System.out.println("Processando linha: " + Arrays.toString(linha));
+
+                // Tratar valores vazios ou nulos nos campos
+                String nomeSobrenome = linha[2] != null && !linha[2].isEmpty() ? linha[2] : null;
+                String nomeFormatado = nomeSobrenome != null ? formatarNomesAutores(nomeSobrenome) : null;
 
                 BibliotecaDto bibliotecaDto = new BibliotecaDto(
-                        linha[0], linha[1], nomeFormatado, Integer.parseInt(linha[3]), linha[4],
-                        linha[5], linha[6], linha[7], linha[8], linha[9], linha[10]
+                        linha[0] != null ? linha[0] : null,  // Exemplo de campo que pode ser nulo
+                        linha[1] != null ? linha[1] : null,  // Exemplo de campo que pode ser nulo
+                        nomeFormatado,
+                        parseIntSafe(linha[3]),  // Utilizando o método parseIntSafe para tratar inteiros
+                        linha[4] != null ? linha[4] : null,
+                        linha[5] != null ? linha[5] : null,
+                        linha[6] != null ? linha[6] : null,
+                        linha[7] != null ? linha[7] : null,
+                        linha[8] != null ? linha[8] : null,
+                        linha[9] != null ? linha[9] : null,
+                        linha[10] != null ? linha[10] : null
                 );
-                trabalhos.add(bibliotecaDto);
+
+                if (bibliotecaDto != null) {
+                    trabalhos.add(bibliotecaDto);
+                } else {
+                    System.out.println("Linha ignorada: " + Arrays.toString(linha));
+                }
             }
 
         } catch (Exception e) {
@@ -54,6 +70,7 @@ public class BibliotecaService {
 
         return salvarNoBanco(trabalhos);
     }
+
 
     private List<BibliotecaDto> salvarNoBanco(List<BibliotecaDto> trabalhosDto) {
         List<Biblioteca> trabalhos = trabalhosDto.stream().map(dto -> new Biblioteca(
@@ -79,6 +96,13 @@ public class BibliotecaService {
             }
         }
         return String.join(", ", nomesFormatados);
+    }
+
+    public int parseIntSafe(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return 0;
+        }
+        return Integer.parseInt(valor);
     }
 
     public List<BibliotecaDto> listarTodos() {
