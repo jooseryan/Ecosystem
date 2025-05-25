@@ -1,11 +1,11 @@
-package br.com.ecosystem.models;
+package br.ufpb.ecosystem.entities;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "roles")
-public class Role implements GrantedAuthority {
+public class UserRole implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,10 +14,10 @@ public class Role implements GrantedAuthority {
     @Column(unique = true, nullable = false)
     private String role; // Exemplo: "ROLE_USER", "ROLE_ADMIN"
 
-    public Role() {
+    public UserRole() {
     }
 
-    public Role(String role) {
+    public UserRole(String role) {
         this.role = role;
     }
 

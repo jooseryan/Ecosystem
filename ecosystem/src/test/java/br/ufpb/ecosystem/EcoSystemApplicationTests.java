@@ -1,4 +1,4 @@
-package br.com.ecosystem;
+package br.ufpb.ecosystem;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

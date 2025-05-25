@@ -1,7 +1,7 @@
-package br.com.ecosystem.security;
+package br.ufpb.ecosystem.security;
 
-import br.com.ecosystem.models.Usuario;
-import br.com.ecosystem.repositories.UsuarioRepository;
+import br.ufpb.ecosystem.entities.User;
+import br.ufpb.ecosystem.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -31,11 +31,11 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             var username = tokenService.validateToken(token);
-            Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+            Optional<User> usuarioOpt = userRepository.findByUsername(username);
 
             if (usuarioOpt.isPresent()) {
-                Usuario usuario = usuarioOpt.get();  // Obtém o objeto Usuario
-                UserDetails userDetails = usuario;   // Se Usuario implementa UserDetails
+                User user = usuarioOpt.get();
+                UserDetails userDetails = user;
                 var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

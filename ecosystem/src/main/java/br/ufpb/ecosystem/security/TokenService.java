@@ -1,6 +1,7 @@
-package br.com.ecosystem.security;
+package br.ufpb.ecosystem.security;
 
-import br.com.ecosystem.models.Usuario;
+import br.ufpb.ecosystem.entities.UserRole;
+import br.ufpb.ecosystem.entities.User;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Service
 public class TokenService {
@@ -17,12 +19,18 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    public String generateToken(Usuario usuario) {
+    public String generateToken(User user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
+
+            List<String> roles = user.getRoles().stream()
+                    .map(UserRole::getRole)
+                    .toList();
+
             return JWT.create()
                     .withIssuer("auth-ecosystem")
-                    .withSubject(usuario.getUsername())
+                    .withSubject(user.getUsername())
+                    .withClaim("roles", roles)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
         } catch (Exception exception) {

@@ -1,8 +1,13 @@
-package br.com.ecosystem.dtos;
+package br.ufpb.ecosystem.dtos;
 
-public class BibliotecaDto {
+
+import java.util.List;
+
+public class BibliographicSourceDTO {
     private String codigo;
     private String titulo;
+    private List<AuthorDTO> autores;
+
     private String autor;
     private int ano;
     private String referencia;
@@ -12,13 +17,17 @@ public class BibliotecaDto {
     private String linkDrive;
     private String imagem;
     private String observacoes;
+    private List<String> palavraChave;
+    private String resumo;
 
-    public BibliotecaDto() {}
+    public BibliographicSourceDTO() {}
 
-    public BibliotecaDto(String codigo, String titulo, String autor, int ano, String referencia, String link, String tipo, String midia, String linkDrive, String imagem, String observacoes) {
+    public BibliographicSourceDTO(String codigo, String titulo, List<AuthorDTO> autores, int ano, String referencia, String link,
+                                  String tipo, String midia, String linkDrive, String imagem, String observacoes,
+                                  List<String> palavraChave, String resumo) {
         this.codigo = codigo;
         this.titulo = titulo;
-        this.autor = autor;
+        this.autores = autores;
         this.ano = ano;
         this.referencia = referencia;
         this.link = link;
@@ -27,6 +36,8 @@ public class BibliotecaDto {
         this.linkDrive = linkDrive;
         this.imagem = imagem;
         this.observacoes = observacoes;
+        this.palavraChave = palavraChave;
+        this.resumo = resumo;
     }
 
     public String getTitulo() {
@@ -45,12 +56,12 @@ public class BibliotecaDto {
         this.codigo = codigo;
     }
 
-    public String getAutor() {
-        return autor;
+    public List<AuthorDTO> getAutores() {
+        return autores;
     }
 
-    public void setAutor(String autor) {
-        this.autor = autor;
+    public void setAutores(List<AuthorDTO> autores) {
+        this.autores = autores;
     }
 
     public int getAno() {
@@ -115,5 +126,21 @@ public class BibliotecaDto {
 
     public void setLinkDrive(String linkDrive) {
         this.linkDrive = linkDrive;
+    }
+
+    public List<String> getPalavraChave() {
+        return palavraChave;
+    }
+
+    public void setPalavraChave(List<String> palavraChave) {
+        this.palavraChave = palavraChave;
+    }
+
+    public String getResumo() {
+        return resumo;
+    }
+
+    public void setResumo(String resumo) {
+        this.resumo = resumo;
     }
 }

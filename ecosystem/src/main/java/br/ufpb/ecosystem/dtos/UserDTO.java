@@ -1,6 +1,5 @@
-package br.com.ecosystem.dtos;
+package br.ufpb.ecosystem.dtos;
 
-import br.com.ecosystem.models.Role;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
@@ -8,23 +7,24 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public class UsuarioDTO {
+public class UserDTO {
 
     @NotBlank(message = "O nome de usuário não pode estar vazio.")
-    @Size(min = 4, max = 50, message = "O nome de usuário deve ter entre 4 e 50 caracteres.")
+    @Size(min = 4, max = 30, message = "O nome de usuário deve ter entre 4 e 30 caracteres.")
     private String username;
 
     @NotBlank(message = "A senha não pode estar vazia.")
-    @Size(min = 6, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
+    @Size(min = 8, max = 100, message = "A senha deve ter entre 8 e 100 caracteres.")
     private String password;
+
 
     @Enumerated(EnumType.STRING)
     private Set<String> role;
 
 
-    public UsuarioDTO() {}
+    public UserDTO() {}
 
-    public UsuarioDTO(String username, String password, Set<String> role) {
+    public UserDTO(String username, String password, Set<String> role) {
         this.username = username;
         this.password = password;
         this.role = role;

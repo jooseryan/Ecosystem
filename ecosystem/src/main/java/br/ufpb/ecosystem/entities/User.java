@@ -1,4 +1,4 @@
-package br.com.ecosystem.models;
+package br.ufpb.ecosystem.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario implements UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,7 @@ public class Usuario implements UserDetails {
     private String username;
 
     @NotBlank(message = "A senha não pode estar vazia.")
-    @Size(min = 6, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
+    @Size(min = 8, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
     @Column(nullable = false)
     private String password;
 
@@ -39,12 +39,12 @@ public class Usuario implements UserDetails {
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
+    private Set<UserRole> userRoles = new HashSet<>();
 
-    public Usuario() {
+    public User() {
     }
 
-    public Usuario(String username, String password) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
@@ -81,24 +81,22 @@ public class Usuario implements UserDetails {
         this.enabled = enabled;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Set<UserRole> getRoles() {
+        return userRoles;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(
-                        role.getRole().startsWith("ROLE_") ? role.getRole() : "ROLE_" + role.getRole()
+        return userRoles.stream()
+                .map(userRole -> new SimpleGrantedAuthority(
+                        userRole.getRole().startsWith("ROLE_") ? userRole.getRole() : "ROLE_" + userRole.getRole()
                 ))
                 .collect(Collectors.toSet());
     }
-
-
 
     @Override
     public boolean isAccountNonExpired() { return true; }

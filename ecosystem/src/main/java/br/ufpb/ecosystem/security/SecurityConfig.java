@@ -1,5 +1,7 @@
-package br.com.ecosystem.security;
+package br.ufpb.ecosystem.security;
 
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@SecurityScheme(name = SecurityConfig.SECURITY, type = SecuritySchemeType.HTTP, bearerFormat = "JWT", scheme = "bearer")
 public class SecurityConfig {
+
+    public static final String SECURITY = "bearerAuth";
 
     @Autowired
     private SecurityFilter securityFilter;
@@ -25,6 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/usuarios/login").permitAll()
@@ -34,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/usuarios/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/usuarios/{id}").hasRole("ADMIN")
+                        .requestMatchers("/v3/api-docs/**", "swagger-ui/**", "swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Coloca o filtro JWT antes do filtro de autenticação padrão
@@ -44,11 +51,11 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // Codifica senhas usando BCrypt
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager(); // Gerencia a autenticação
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
