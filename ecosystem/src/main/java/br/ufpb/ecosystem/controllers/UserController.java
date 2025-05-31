@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/usuarios")
-@Tag(name = "Usuário", description = "Controlador responsável por operações de autenticação e gerenciamento de usuários.")
+@RequestMapping("/users")
+@Tag(name = "User", description = "Controller responsible for authentication and user management operations.")
 @SecurityRequirement(name = SecurityConfig.SECURITY)
 public class UserController {
 
@@ -42,106 +42,106 @@ public class UserController {
 
     @PostMapping("/login")
     @Operation(
-            summary = "Autenticação de usuário",
-            description = "Realiza a autenticação de um usuário com base nas credenciais fornecidas e retorna um token JWT em caso de sucesso."
+            summary = "User authentication",
+            description = "Authenticates a user based on the provided credentials and returns a JWT token upon success."
     )
-    @ApiResponse(responseCode = "200", description = "Usuário autenticado com sucesso")
-    @ApiResponse(responseCode = "401", description = "Credenciais inválidas ou usuário não autenticado")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
+    @ApiResponse(responseCode = "200", description = "User successfully authenticated")
+    @ApiResponse(responseCode = "401", description = "Invalid credentials or user not authenticated")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(userDTO.getUsername(), userDTO.getPassword())
         );
 
-        User user = userService.realizarLogin(userDTO);
+        User user = userService.loginUser(userDTO);
         String token = tokenService.generateToken(user);
 
         if (authentication.isAuthenticated()) {
             return ResponseEntity.ok(new LoginResponseDTO(token));
         } else {
-            ErrorResponseDTO errorResponse = new ErrorResponseDTO("Usuário ou senha inválidos");
+            ErrorResponseDTO errorResponse = new ErrorResponseDTO("Invalid username or password");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
     @PostMapping("/register")
     @Operation(
-            summary = "Cadastro de novo usuário",
-            description = "Cadastra um novo usuário no sistema com base nas informações fornecidas."
+            summary = "Register new user",
+            description = "Registers a new user in the system using the provided information."
     )
-    @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Erro de validação ou usuário já existente")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<?> registrarUsuario(@RequestBody UserDTO userDTO) {
+    @ApiResponse(responseCode = "201", description = "User successfully registered")
+    @ApiResponse(responseCode = "400", description = "Validation error or user already exists")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         try {
-            User user = userService.cadastrarUsuario(userDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Usuário criado com sucesso!");
+            User user = userService.registerUser(userDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body("User successfully created!");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + e.getMessage());
         }
     }
 
     @GetMapping
     @Operation(
-            summary = "Listar todos os usuários",
-            description = "Retorna uma lista com todos os usuários cadastrados no sistema."
+            summary = "List all users",
+            description = "Returns a list of all users registered in the system."
     )
-    @ApiResponse(responseCode = "200", description = "Lista de usuários obtida com sucesso")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<List<User>> listarTodosUsuarios() {
-        return ResponseEntity.ok(userService.listarTodosUsuarios());
+    @ApiResponse(responseCode = "200", description = "List of users retrieved successfully")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.listAllUsers());
     }
 
     @GetMapping("/{id}")
     @Operation(
-            summary = "Buscar usuário por ID",
-            description = "Retorna os dados de um usuário específico com base no ID fornecido."
+            summary = "Find user by ID",
+            description = "Returns user details based on the provided ID."
     )
-    @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<User> buscarUsuarioPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.buscarUsuarioPorId(id));
+    @ApiResponse(responseCode = "200", description = "User found successfully")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
     @Operation(
-            summary = "Atualizar dados completos do usuário",
-            description = "Atualiza todos os dados de um usuário específico com base no ID fornecido."
+            summary = "Fully update user data",
+            description = "Updates all user data based on the provided ID."
     )
-    @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<User> atualizarUsuario(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.atualizarUsuario(id, userDTO));
+    @ApiResponse(responseCode = "200", description = "User updated successfully")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
     @PatchMapping("/{id}")
     @Operation(
-            summary = "Atualização parcial de dados do usuário",
-            description = "Atualiza parcialmente os dados de um usuário com base no ID fornecido."
+            summary = "Partially update user data",
+            description = "Partially updates user data based on the provided ID."
     )
-    @ApiResponse(responseCode = "200", description = "Usuário atualizado parcialmente com sucesso")
-    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<User> atualizarUsuarioParcial(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.atualizarUsuarioParcial(id, userDTO));
+    @ApiResponse(responseCode = "200", description = "User partially updated successfully")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<User> partialUpdateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        return ResponseEntity.ok(userService.updateUserPartially(id, userDTO));
     }
 
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Deletar usuário",
-            description = "Remove um usuário do sistema com base no ID fornecido."
+            summary = "Delete user",
+            description = "Removes a user from the system based on the provided ID."
     )
-    @ApiResponse(responseCode = "200", description = "Usuário deletado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<String> deletarUsuario(@PathVariable Long id) {
+    @ApiResponse(responseCode = "200", description = "User successfully deleted")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         try {
-            userService.deletarUsuario(id);
-            return ResponseEntity.ok("Usuário deletado com sucesso!");
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User successfully deleted!");
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
     }
 }

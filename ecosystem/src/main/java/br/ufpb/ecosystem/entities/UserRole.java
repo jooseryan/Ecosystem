@@ -11,14 +11,13 @@ public class UserRole implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String role; // Exemplo: "ROLE_USER", "ROLE_ADMIN"
+    @Column(name = "role", unique = true, nullable = false)
+    private String role; // Example: "ROLE_USER", "ROLE_ADMIN"
 
-    public UserRole() {
-    }
+    public UserRole() {}
 
-    public UserRole(String role) {
-        this.role = role;
+    public UserRole(String roleName) {
+        this.role = roleName;
     }
 
     public Long getId() {
@@ -41,5 +40,4 @@ public class UserRole implements GrantedAuthority {
     public String getAuthority() {
         return role;
     }
-
 }

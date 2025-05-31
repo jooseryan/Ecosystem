@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/biblioteca")
-@Tag(name = "Biblioteca", description = ("Controlador responsável por gerenciar os dados dos trabalhos acadêmicos, permitindo operações de cadastro, consulta, atualização e exclusão."))
+@RequestMapping("/library")
+@Tag(name = "Library", description = "Controller responsible for managing academic work data, allowing operations such as registration, retrieval, update, and deletion.")
 @SecurityRequirement(name = SecurityConfig.SECURITY)
 public class BibliographicSourceController {
 
@@ -28,98 +28,85 @@ public class BibliographicSourceController {
         this.bibliographicSourceService = bibliographicSourceService;
     }
 
-//    @PostMapping("/cadastrar")
-//    @Operation(
-//            summary = "Cadastrar dados via arquivo CSV",
-//            description = "Realiza o upload de um arquivo CSV contendo os dados dos trabalhos acadêmicos. Os dados são extraídos e salvos no banco de dados."
-//    )
-//    @ApiResponse(responseCode = "201", description = "Dados extraídos e salvos com sucesso.")
-//    @ApiResponse(responseCode = "400", description = "Arquivo CSV vazio ou em formato inválido.")
-//    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao processar o arquivo.")
-//    public ResponseEntity<List<BibliotecaDto>> uploadCsv(@RequestParam("file") MultipartFile file) {
-//        List<BibliotecaDto> trabalhos = bibliotecaService.processarCsv(file);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(trabalhos);
-//    }
-
-    @PostMapping("/inserir")
+    @PostMapping("/add")
     @Operation(
-            summary = "Inserir dados manualmente",
-            description = "Permite o cadastro manual de um trabalho acadêmico, recebendo os dados no corpo da requisição."
+            summary = "Insert data manually",
+            description = "Allows manual registration of academic work by receiving the data in the request body."
     )
-    @ApiResponse(responseCode = "200", description = "Dados inseridos e salvos com sucesso.")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos ou incompletos.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao inserir os dados.")
-    public ResponseEntity<BibliographicSourceDTO> inserir(@RequestBody BibliographicSourceDTO bibliographicSourceDto) {
-        BibliographicSourceDTO novoTrabalho = bibliographicSourceService.inserir(bibliographicSourceDto);
-        return ResponseEntity.ok(novoTrabalho);
+    @ApiResponse(responseCode = "200", description = "Data successfully inserted and saved.")
+    @ApiResponse(responseCode = "400", description = "Invalid or incomplete data.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while inserting data.")
+    public ResponseEntity<BibliographicSourceDTO> insert(@RequestBody BibliographicSourceDTO bibliographicSourceDto) {
+        BibliographicSourceDTO newEntry = bibliographicSourceService.insert(bibliographicSourceDto);
+        return ResponseEntity.ok(newEntry);
     }
 
     @GetMapping
     @Operation(
-            summary = "Listar todos os trabalhos",
-            description = "Retorna uma lista com todos os trabalhos cadastrados no sistema."
+            summary = "List all academic works",
+            description = "Returns a list of all academic works registered in the system."
     )
-    @ApiResponse(responseCode = "200", description = "Lista de trabalhos obtida com sucesso.")
-    @ApiResponse(responseCode = "204", description = "Nenhum trabalho encontrado.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao buscar os dados.")
-    public ResponseEntity<List<BibliographicSourceDTO>> listarTodos() {
-        List<BibliographicSourceDTO> trabalhos = bibliographicSourceService.listarTodos();
-        if (trabalhos.isEmpty()) {
+    @ApiResponse(responseCode = "200", description = "List of academic works successfully retrieved.")
+    @ApiResponse(responseCode = "204", description = "No academic works found.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while retrieving data.")
+    public ResponseEntity<List<BibliographicSourceDTO>> findAll() {
+        List<BibliographicSourceDTO> works = bibliographicSourceService.findAll();
+        if (works.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(trabalhos);
+        return ResponseEntity.ok(works);
     }
 
     @GetMapping("/{id}")
     @Operation(
-            summary = "Buscar trabalho por ID",
-            description = "Busca um trabalho específico pelo seu identificador único."
+            summary = "Find academic work by ID",
+            description = "Retrieves a specific academic work by its unique identifier."
     )
-    @ApiResponse(responseCode = "200", description = "Trabalho encontrado com sucesso.")
-    @ApiResponse(responseCode = "404", description = "Trabalho com o ID especificado não foi encontrado.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao buscar o trabalho.")
-    public ResponseEntity<BibliographicSourceDTO> buscarPorId(@PathVariable String id) {
-        Optional<BibliographicSourceDTO> trabalho = bibliographicSourceService.buscarPorId(id);
-        return trabalho.map(ResponseEntity::ok)
+    @ApiResponse(responseCode = "200", description = "Academic work successfully found.")
+    @ApiResponse(responseCode = "404", description = "Academic work with the specified ID was not found.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while retrieving the academic work.")
+    public ResponseEntity<BibliographicSourceDTO> findById(@PathVariable Long id) {
+        Optional<BibliographicSourceDTO> work = bibliographicSourceService.findById(id);
+        return work.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     @Operation(
-            summary = "Atualizar trabalho por completo",
-            description = "Atualiza todos os campos de um trabalho existente com base no ID informado."
+            summary = "Fully update academic work",
+            description = "Updates all fields of an existing academic work based on the provided ID."
     )
-    @ApiResponse(responseCode = "200", description = "Trabalho atualizado com sucesso.")
-    @ApiResponse(responseCode = "404", description = "Trabalho com o ID especificado não foi encontrado.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao atualizar os dados.")
-    public ResponseEntity<BibliographicSourceDTO> atualizar(@PathVariable String id, @RequestBody BibliographicSourceDTO bibliographicSourceDto) {
-        BibliographicSourceDTO atualizado = bibliographicSourceService.atualizar(id, bibliographicSourceDto);
-        return ResponseEntity.status(HttpStatus.OK).body(atualizado);
+    @ApiResponse(responseCode = "200", description = "Academic work successfully updated.")
+    @ApiResponse(responseCode = "404", description = "Academic work with the specified ID was not found.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while updating the academic work.")
+    public ResponseEntity<BibliographicSourceDTO> update(@PathVariable Long id, @RequestBody BibliographicSourceDTO bibliographicSourceDto) {
+        BibliographicSourceDTO updated = bibliographicSourceService.update(id, bibliographicSourceDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     @PatchMapping("/{id}")
     @Operation(
-            summary = "Atualizar trabalho parcialmente",
-            description = "Atualiza parcialmente os campos de um trabalho, permitindo modificar apenas os dados informados no corpo da requisição."
+            summary = "Partially update academic work",
+            description = "Partially updates an academic work by modifying only the fields provided in the request body."
     )
-    @ApiResponse(responseCode = "200", description = "Trabalho atualizado com sucesso.")
-    @ApiResponse(responseCode = "404", description = "Trabalho com o ID especificado não foi encontrado.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao atualizar os dados.")
-    public ResponseEntity<BibliographicSourceDTO> atualizarParcialmente(@PathVariable String id, @RequestBody BibliographicSourceDTO bibliographicSourceDto) {
-        BibliographicSourceDTO atualizado = bibliographicSourceService.atualizarParcialmente(id, bibliographicSourceDto);
-        return ResponseEntity.status(HttpStatus.OK).body(atualizado);
+    @ApiResponse(responseCode = "200", description = "Academic work successfully updated.")
+    @ApiResponse(responseCode = "404", description = "Academic work with the specified ID was not found.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while updating the academic work.")
+    public ResponseEntity<BibliographicSourceDTO> partialUpdate(@PathVariable Long id, @RequestBody BibliographicSourceDTO bibliographicSourceDto) {
+        BibliographicSourceDTO updated = bibliographicSourceService.partialUpdate(id, bibliographicSourceDto);
+        return ResponseEntity.status(HttpStatus.OK).body(updated);
     }
 
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Deletar trabalho por ID",
-            description = "Remove um trabalho acadêmico com base no identificador fornecido."
+            summary = "Delete academic work by ID",
+            description = "Removes an academic work based on the provided identifier."
     )
-    @ApiResponse(responseCode = "204", description = "Trabalho deletado com sucesso.")
-    @ApiResponse(responseCode = "404", description = "Trabalho com o ID especificado não foi encontrado.")
-    @ApiResponse(responseCode = "500", description = "Erro interno no servidor ao excluir o trabalho.")
-    public ResponseEntity<Void> deletar(@PathVariable String id) {
-        bibliographicSourceService.deletar(id);
+    @ApiResponse(responseCode = "204", description = "Academic work successfully deleted.")
+    @ApiResponse(responseCode = "404", description = "Academic work with the specified ID was not found.")
+    @ApiResponse(responseCode = "500", description = "Internal server error while deleting the academic work.")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        bibliographicSourceService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

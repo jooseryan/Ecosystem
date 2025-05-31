@@ -1,8 +1,8 @@
 package br.ufpb.ecosystem.services;
 
 import br.ufpb.ecosystem.dtos.UserDTO;
-import br.ufpb.ecosystem.entities.UserRole;
 import br.ufpb.ecosystem.entities.User;
+import br.ufpb.ecosystem.entities.UserRole;
 import br.ufpb.ecosystem.repositories.RoleRepository;
 import br.ufpb.ecosystem.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 @Service
 public class UserService implements UserDetailsService {
 
@@ -24,119 +23,147 @@ public class UserService implements UserDetailsService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-
-    public UserService(UserRepository userRepository, RoleRepository roleRepository,
+    public UserService(UserRepository userRepository,
+                       RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
 
-        criarRoleSeNaoExistir();
+        createDefaultRoleIfNotExists();
     }
 
-    private void criarRoleSeNaoExistir() {
+    /**
+     * Ensures the default role exists (e.g., ROLE_USER).
+     */
+    private void createDefaultRoleIfNotExists() {
         roleRepository.findByRole("ROLE_USER").orElseGet(() -> {
-            UserRole novaUserRole = new UserRole();
-            novaUserRole.setRole("ROLE_USER");
-            return roleRepository.save(novaUserRole);
+            UserRole defaultRole = new UserRole();
+            defaultRole.setRole("ROLE_USER");
+            return roleRepository.save(defaultRole);
         });
     }
 
-    public User cadastrarUsuario(UserDTO userDTO) {
+    /**
+     * Registers a new user.
+     */
+    public User registerUser(UserDTO userDTO) {
         if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
-            throw new RuntimeException("Usuário já existe.");
+            throw new RuntimeException("User already exists.");
         }
 
         User newUser = new User();
         newUser.setUsername(userDTO.getUsername());
         newUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
-        // Verifica se as roles foram enviadas no DTO
         if (userDTO.getRole() != null && !userDTO.getRole().isEmpty()) {
-            Set<UserRole> userRoles = userDTO.getRole().stream()
+            Set<UserRole> roles = userDTO.getRole().stream()
                     .map(roleStr -> roleRepository.findByRole(roleStr)
-                            .orElseThrow(() -> new RuntimeException("Role não encontrada: " + roleStr)))
+                            .orElseThrow(() -> new RuntimeException("Role not found: " + roleStr)))
                     .collect(Collectors.toSet());
-            newUser.setRoles(userRoles);
+            newUser.setRoles(roles);
         } else {
-            // Se não forem enviadas roles, atribui um papel padrão (por exemplo, ROLE_USER)
-            UserRole userRoleUser = roleRepository.findByRole("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Role padrão 'ROLE_USER' não encontrada!"));
-            newUser.setRoles(Collections.singleton(userRoleUser));
+            UserRole defaultRole = roleRepository.findByRole("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("Default role 'ROLE_USER' not found!"));
+            newUser.setRoles(Collections.singleton(defaultRole));
         }
 
         return userRepository.save(newUser);
     }
 
-
-    public User realizarLogin(UserDTO userDTO) {
+    /**
+     * Authenticates a user by username and password.
+     */
+    public User loginUser(UserDTO userDTO) {
         User user = userRepository.findByUsername(userDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (!passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Credenciais inválidas.");
+            throw new RuntimeException("Invalid credentials.");
         }
 
         return user;
     }
 
+    /**
+     * Required by Spring Security to load user by username.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.emptyList()
+                Collections.emptyList() // Authorities should be added here if needed
         );
     }
 
-
-    public List<User> listarTodosUsuarios() {
+    /**
+     * Lists all users.
+     */
+    public List<User> listAllUsers() {
         return userRepository.findAll();
     }
 
-    public User buscarUsuarioPorId(Long id) {
+    /**
+     * Fetches a user by their ID.
+     */
+    public User getUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado!"));
+                .orElseThrow(() -> new RuntimeException("User not found!"));
     }
 
-    public User atualizarUsuario(Long id, UserDTO userDTO) {
-        User usuarioExistente = buscarUsuarioPorId(id);
-        usuarioExistente.setUsername(userDTO.getUsername());
-        usuarioExistente.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+    /**
+     * Fully updates an existing user.
+     */
+    public User updateUser(Long id, UserDTO userDTO) {
+        User existingUser = getUserById(id);
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
         if (userDTO.getRole() != null && !userDTO.getRole().isEmpty()) {
-            Set<UserRole> novasUserRoles = userDTO.getRole().stream()
+            Set<UserRole> updatedRoles = userDTO.getRole().stream()
                     .map(roleStr -> roleRepository.findByRole(roleStr)
-                            .orElseThrow(() -> new IllegalArgumentException("Role inválida: " + roleStr)))
+                            .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + roleStr)))
                     .collect(Collectors.toSet());
-            usuarioExistente.setRoles(novasUserRoles);
+            existingUser.setRoles(updatedRoles);
         }
-        return userRepository.save(usuarioExistente);
+
+        return userRepository.save(existingUser);
     }
 
-    public User atualizarUsuarioParcial(Long id, UserDTO userDTO) {
-        User usuarioExistente = buscarUsuarioPorId(id);
+    /**
+     * Partially updates a user (PATCH).
+     */
+    public User updateUserPartially(Long id, UserDTO userDTO) {
+        User existingUser = getUserById(id);
 
         if (userDTO.getUsername() != null && !userDTO.getUsername().isBlank()) {
-            usuarioExistente.setUsername(userDTO.getUsername());
+            existingUser.setUsername(userDTO.getUsername());
         }
+
         if (userDTO.getPassword() != null && !userDTO.getPassword().isBlank()) {
-            usuarioExistente.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
+
         if (userDTO.getRole() != null && !userDTO.getRole().isEmpty()) {
-            Set<UserRole> novasUserRoles = userDTO.getRole().stream()
+            Set<UserRole> updatedRoles = userDTO.getRole().stream()
                     .map(roleStr -> roleRepository.findByRole(roleStr)
-                            .orElseThrow(() -> new IllegalArgumentException("Role inválida: " + roleStr)))
+                            .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + roleStr)))
                     .collect(Collectors.toSet());
-            usuarioExistente.setRoles(novasUserRoles);
+            existingUser.setRoles(updatedRoles);
         }
-        return userRepository.save(usuarioExistente);
+
+        return userRepository.save(existingUser);
     }
 
-    public void deletarUsuario(Long id) {
-        User user = buscarUsuarioPorId(id);
+    /**
+     * Deletes a user by ID.
+     */
+    public void deleteUser(Long id) {
+        User user = getUserById(id);
         userRepository.delete(user);
     }
 }

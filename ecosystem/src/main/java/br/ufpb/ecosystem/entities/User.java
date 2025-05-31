@@ -13,41 +13,42 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "users")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O nome de usuário não pode estar vazio.")
-    @Size(min = 4, max = 50, message = "O nome de usuário deve ter entre 4 e 50 caracteres.")
+    @NotBlank(message = "Username must not be blank.")
+    @Size(min = 4, max = 50, message = "Username must be between 4 and 50 characters long.")
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NotBlank(message = "A senha não pode estar vazia.")
-    @Size(min = 8, max = 100, message = "A senha deve ter entre 6 e 100 caracteres.")
+    @NotBlank(message = "Password must not be blank.")
+    @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters long.")
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @ManyToMany(fetch = FetchType.EAGER) // Carrega os roles do usuário automaticamente
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "usuario_roles",
-            joinColumns = @JoinColumn(name = "usuario_id"),
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<UserRole> userRoles = new HashSet<>();
 
-    public User() {
-    }
+    public User() {}
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -57,6 +58,7 @@ public class User implements UserDetails {
         this.id = id;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
@@ -65,6 +67,7 @@ public class User implements UserDetails {
         this.username = username;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -89,6 +92,8 @@ public class User implements UserDetails {
         this.userRoles = userRoles;
     }
 
+    // Spring Security overrides
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return userRoles.stream()
@@ -99,12 +104,17 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 }

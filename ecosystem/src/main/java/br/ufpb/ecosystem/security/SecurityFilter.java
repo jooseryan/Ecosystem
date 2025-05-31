@@ -26,25 +26,39 @@ public class SecurityFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var token = this.recoverToken(request);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String token = recoverToken(request);
 
         if (token != null) {
-            var username = tokenService.validateToken(token);
-            Optional<User> usuarioOpt = userRepository.findByUsername(username);
+            String username = tokenService.validateToken(token);
 
-            if (usuarioOpt.isPresent()) {
-                User user = usuarioOpt.get();
-                UserDetails userDetails = user;
-                var authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (username != null) {
+                Optional<User> userOpt = userRepository.findByUsername(username);
+
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    UserDetails userDetails = user;
+
+                    // Set authentication in security context
+                    var authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
+
         filterChain.doFilter(request, response);
     }
 
     private String recoverToken(HttpServletRequest request) {
-        var authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return null;
         }

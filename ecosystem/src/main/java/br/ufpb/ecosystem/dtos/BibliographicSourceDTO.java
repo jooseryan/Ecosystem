@@ -1,146 +1,148 @@
 package br.ufpb.ecosystem.dtos;
 
+import br.ufpb.ecosystem.entities.Keyword;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Type;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Media;
 
 import java.util.List;
 
 public class BibliographicSourceDTO {
-    private String codigo;
-    private String titulo;
-    private List<AuthorDTO> autores;
 
-    private String autor;
-    private int ano;
-    private String referencia;
-    private String link;
-    private String tipo;
-    private String midia;
-    private String linkDrive;
-    private String imagem;
-    private String observacoes;
-    private List<String> palavraChave;
-    private String resumo;
+    private String code;
+    private String title;
+    private List<AuthorDTO> authors;
+    private int year;
+    private String reference;
+    private String url;
+    private Type type;
+    private Media media;
+    private String driveUrl;
+    private String imageUrl;
+    private String notes;
+    private List<KeywordDTO> keywords;
+    private String abstractText;
 
     public BibliographicSourceDTO() {}
 
-    public BibliographicSourceDTO(String codigo, String titulo, List<AuthorDTO> autores, int ano, String referencia, String link,
-                                  String tipo, String midia, String linkDrive, String imagem, String observacoes,
-                                  List<String> palavraChave, String resumo) {
-        this.codigo = codigo;
-        this.titulo = titulo;
-        this.autores = autores;
-        this.ano = ano;
-        this.referencia = referencia;
-        this.link = link;
-        this.tipo = tipo;
-        this.midia = midia;
-        this.linkDrive = linkDrive;
-        this.imagem = imagem;
-        this.observacoes = observacoes;
-        this.palavraChave = palavraChave;
-        this.resumo = resumo;
+    public BibliographicSourceDTO(String code, String title, List<AuthorDTO> authors, int year, String reference, String url,
+                                  Type type, Media media, String driveUrl, String imageUrl, String notes,
+                                  List<KeywordDTO> keywords, String abstractText) {
+        this.code = code;
+        this.title = title;
+        this.authors = authors;
+        this.year = year;
+        this.reference = reference;
+        this.url = url;
+        this.type = type;
+        this.media = media;
+        this.driveUrl = driveUrl;
+        this.imageUrl = imageUrl;
+        this.notes = notes;
+        this.keywords = keywords;
+        this.abstractText = abstractText;
     }
 
-    public String getTitulo() {
-        return titulo;
+    public String getCode() {
+        return code;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getCodigo() {
-        return codigo;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public List<AuthorDTO> getAutores() {
-        return autores;
+    public List<AuthorDTO> getAuthors() {
+        return authors;
     }
 
-    public void setAutores(List<AuthorDTO> autores) {
-        this.autores = autores;
+    public void setAuthors(List<AuthorDTO> authors) {
+        this.authors = authors;
     }
 
-    public int getAno() {
-        return ano;
+    public int getYear() {
+        return year;
     }
 
-    public void setAno(int ano) {
-        this.ano = ano;
+    public void setYear(int year) {
+        this.year = year;
     }
 
-    public String getReferencia() {
-        return referencia;
+    public String getReference() {
+        return reference;
     }
 
-    public void setReferencia(String referencia) {
-        this.referencia = referencia;
+    public void setReference(String reference) {
+        this.reference = reference;
     }
 
-    public String getMidia() {
-        return midia;
+    public String getUrl() {
+        return url;
     }
 
-    public void setMidia(String midia) {
-        this.midia = midia;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
-    public String getTipo() {
-        return tipo;
+    public Type getType() {
+        return type;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setType(Type type) {
+        this.type = type;
     }
 
-    public String getLink() {
-        return link;
+    public Media getMedia() {
+        return media;
     }
 
-    public void setLink(String link) {
-        this.link = link;
+    public void setMedia(Media media) {
+        this.media = media;
     }
 
-    public String getImagem() {
-        return imagem;
+    public String getDriveUrl() {
+        return driveUrl;
     }
 
-    public void setImagem(String imagem) {
-        this.imagem = imagem;
+    public void setDriveUrl(String driveUrl) {
+        this.driveUrl = driveUrl;
     }
 
-    public String getObservacoes() {
-        return observacoes;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
-    public String getLinkDrive() {
-        return linkDrive;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setLinkDrive(String linkDrive) {
-        this.linkDrive = linkDrive;
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
-    public List<String> getPalavraChave() {
-        return palavraChave;
+    public List<KeywordDTO> getKeywords() {
+        return keywords;
     }
 
-    public void setPalavraChave(List<String> palavraChave) {
-        this.palavraChave = palavraChave;
+    public void setKeywords(List<KeywordDTO> keywords) {
+        this.keywords = keywords;
     }
 
-    public String getResumo() {
-        return resumo;
+    public String getAbstractText() {
+        return abstractText;
     }
 
-    public void setResumo(String resumo) {
-        this.resumo = resumo;
+    public void setAbstractText(String abstractText) {
+        this.abstractText = abstractText;
     }
 }

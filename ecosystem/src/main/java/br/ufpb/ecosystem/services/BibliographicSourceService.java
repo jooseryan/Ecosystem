@@ -2,9 +2,13 @@ package br.ufpb.ecosystem.services;
 
 import br.ufpb.ecosystem.dtos.AuthorDTO;
 import br.ufpb.ecosystem.dtos.BibliographicSourceDTO;
+import br.ufpb.ecosystem.dtos.KeywordDTO;
 import br.ufpb.ecosystem.entities.Author;
 import br.ufpb.ecosystem.entities.BibliographicSource;
+import br.ufpb.ecosystem.entities.Keyword;
+import br.ufpb.ecosystem.repositories.AuthorRepository;
 import br.ufpb.ecosystem.repositories.BibliographicSourceRepository;
+import br.ufpb.ecosystem.repositories.KeywordRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -14,215 +18,231 @@ import java.util.stream.Collectors;
 public class BibliographicSourceService {
 
     private final BibliographicSourceRepository bibliographicSourceRepository;
+    private final KeywordRepository keywordRepository;
+    private final AuthorRepository authorRepository;
 
-    public BibliographicSourceService(BibliographicSourceRepository bibliographicSourceRepository) {
+    public BibliographicSourceService(BibliographicSourceRepository bibliographicSourceRepository, KeywordRepository keywordRepository, AuthorRepository authorRepository) {
         this.bibliographicSourceRepository = bibliographicSourceRepository;
+        this.keywordRepository = keywordRepository;
+        this.authorRepository = authorRepository;
     }
 
-    //    public List<BibliotecaDto> processarCsv(MultipartFile file) {
-//        List<BibliotecaDto> trabalhos = new ArrayList<>();
-//
-//        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-//             CSVReader csvReader = new CSVReader(reader)) {
-//
-//            String[] headers = csvReader.readNext();
-//            if (headers == null) {
-//                throw new RuntimeException("Arquivo CSV vazio ou inválido.");
-//            }
-//
-//            String[] linha;
-//            while ((linha = csvReader.readNext()) != null) {
-//
-//                System.out.println("Processando linha: " + Arrays.toString(linha));
-//
-//                String nomeSobrenome = linha[2] != null && !linha[2].isEmpty() ? linha[2] : null;
-//                String nomeFormatado = nomeSobrenome != null ? formatarNomesAutores(nomeSobrenome) : null;
-//
-//                BibliotecaDto bibliotecaDto = new BibliotecaDto(
-//                        linha[0] != null ? linha[0] : null,
-//                        linha[1] != null ? linha[1] : null,
-//                        nomeFormatado,
-//                        parseIntSafe(linha[3]),
-//                        linha[4] != null ? linha[4] : null,
-//                        linha[5] != null ? linha[5] : null,
-//                        linha[6] != null ? linha[6] : null,
-//                        linha[7] != null ? linha[7] : null,
-//                        linha[8] != null ? linha[8] : null,
-//                        linha[9] != null ? linha[9] : null,
-//                        linha[10] != null ? linha[10] : null
-//                );
-//
-//                if (bibliotecaDto != null) {
-//                    trabalhos.add(bibliotecaDto);
-//                } else {
-//                    System.out.println("Linha ignorada: " + Arrays.toString(linha));
-//                }
-//            }
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Erro ao processar o arquivo CSV: " + e.getMessage());
-//        }
-//
-//        return salvarNoBanco(trabalhos);
-//    }
+    private List<Author> convertAuthorDtoToEntity(List<AuthorDTO> authorDtos) {
+        if (authorDtos == null) return new ArrayList<>();
 
-
-    private List<Author> converterAutoresDtoParaEntidade(List<AuthorDTO> autoresDto) {
-        if (autoresDto == null) return new ArrayList<>();
-
-        return autoresDto.stream()
+        return authorDtos.stream()
                 .map(dto -> {
-                    Author author = new Author();
-                    author.setId(dto.getId());
-                    author.setNome(dto.getNome());
-                    author.setEmail(dto.getEmail());
-                    author.setOrcid(dto.getOrcid());
-                    author.setAfiliacao(dto.getAfiliacao());
-                    return author;
+                    Optional<Author> existing = authorRepository.findByEmail(dto.getEmail());
+                    return existing.orElseGet(() -> {
+                        Author newAuthor = new Author();
+                        newAuthor.setId(dto.getId());
+                        newAuthor.setName(dto.getName());
+                        newAuthor.setEmail(dto.getEmail());
+                        newAuthor.setOrcid(dto.getOrcid());
+                        newAuthor.setAffiliation(dto.getAffiliation());
+                        return authorRepository.save(newAuthor);
+                    });
                 })
                 .collect(Collectors.toList());
     }
 
-    private List<AuthorDTO> converterAutoresParaDto(List<Author> autores) {
-        if (autores == null) return new ArrayList<>();
+    private List<Keyword> convertKeywordDtoToEntity(List<KeywordDTO> keywordDtos) {
+        if (keywordDtos == null) return new ArrayList<>();
 
-        return autores.stream()
-                .map(author -> {
-                    AuthorDTO dto = new AuthorDTO();
-                    dto.setId(author.getId());
-                    dto.setNome(author.getNome());
-                    dto.setEmail(author.getEmail());
-                    dto.setOrcid(author.getOrcid());
-                    dto.setAfiliacao(author.getAfiliacao());
-                    return dto;
+        return keywordDtos.stream()
+                .map(dto -> {
+                    Optional<Keyword> existing = keywordRepository.findByValue(dto.getValue());
+                    return existing.orElseGet(() -> {
+                        Keyword newKeyword = new Keyword();
+                        newKeyword.setValue(dto.getValue());
+                        return keywordRepository.save(newKeyword);
+                    });
                 })
                 .collect(Collectors.toList());
     }
 
-    public BibliographicSourceDTO inserir(BibliographicSourceDTO dto) {
-        List<Author> autores = converterAutoresDtoParaEntidade(dto.getAutores());
+    private List<AuthorDTO> convertAuthorToDto(List<Author> authors) {
+        if (authors == null) return new ArrayList<>();
 
-        BibliographicSource trabalho = new BibliographicSource(
-                dto.getCodigo(), dto.getTitulo(), autores, dto.getAno(),
-                dto.getReferencia(), dto.getLink(), dto.getTipo(), dto.getMidia(),
-                dto.getLinkDrive(), dto.getImagem(), dto.getObservacoes(), dto.getPalavraChave(), dto.getResumo()
+        return authors.stream()
+                .map(author -> new AuthorDTO(author.getId(), author.getName(), author.getEmail(),
+                        author.getOrcid(), author.getAffiliation()))
+                .collect(Collectors.toList());
+    }
+
+    private List<KeywordDTO> convertKeywordToDto(List<Keyword> keywords) {
+        if (keywords == null) return new ArrayList<>();
+
+        return keywords.stream()
+                .map(keyword -> new KeywordDTO(keyword.getId(), keyword.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public BibliographicSourceDTO insert(BibliographicSourceDTO dto) {
+        if (isDuplicate(dto)) {
+            throw new IllegalArgumentException("Este trabalho já foi registrado.");
+        }
+        List<Author> authors = convertAuthorDtoToEntity(dto.getAuthors());
+        List<Keyword> keywords = convertKeywordDtoToEntity(dto.getKeywords());
+
+
+        BibliographicSource source = new BibliographicSource(
+                dto.getCode(), dto.getTitle(), authors, dto.getYear(),
+                dto.getReference(), dto.getUrl(), dto.getType(), dto.getMedia(),
+                dto.getDriveUrl(), dto.getImageUrl(), dto.getNotes(), keywords, dto.getAbstractText()
         );
 
-        BibliographicSource trabalhoSalvo = bibliographicSourceRepository.save(trabalho);
+        BibliographicSource saved = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
-                trabalhoSalvo.getCodigoDoRevisor(), trabalhoSalvo.getTitulo(), converterAutoresParaDto(trabalhoSalvo.getAutores()), trabalhoSalvo.getAno(),
-                trabalhoSalvo.getReferencia(), trabalhoSalvo.getLink(), trabalhoSalvo.getTipo(), trabalhoSalvo.getMidia(),
-                trabalhoSalvo.getLinkDrive(), trabalhoSalvo.getImagem(), trabalhoSalvo.getObservacoes(), trabalhoSalvo.getPalavraChave(), trabalhoSalvo.getResumo()
+                saved.getReviewerCode(), saved.getTitle(), convertAuthorToDto(saved.getAuthors()), saved.getYear(),
+                saved.getReference(), saved.getUrl(), saved.getType(), saved.getMedia(),
+                saved.getDriveUrl(), saved.getImageUrl(), saved.getNotes(), convertKeywordToDto(saved.getKeywords()), saved.getAbstractText()
         );
     }
 
-    private List<BibliographicSourceDTO> salvarNoBanco(List<BibliographicSourceDTO> trabalhosDto) {
-        List<BibliographicSource> trabalhos = trabalhosDto.stream()
+    private List<BibliographicSourceDTO> saveAllToDatabase(List<BibliographicSourceDTO> dtos) {
+        List<BibliographicSource> sources = dtos.stream()
                 .map(dto -> new BibliographicSource(
-                        dto.getCodigo(), dto.getTitulo(), converterAutoresDtoParaEntidade(dto.getAutores()), dto.getAno(),
-                        dto.getReferencia(), dto.getLink(), dto.getTipo(), dto.getMidia(),
-                        dto.getLinkDrive(), dto.getImagem(), dto.getObservacoes(), dto.getPalavraChave(), dto.getResumo()
+                        dto.getCode(), dto.getTitle(), convertAuthorDtoToEntity(dto.getAuthors()), dto.getYear(),
+                        dto.getReference(), dto.getUrl(), dto.getType(), dto.getMedia(),
+                        dto.getDriveUrl(), dto.getImageUrl(), dto.getNotes(), convertKeywordDtoToEntity(dto.getKeywords()), dto.getAbstractText()
                 ))
                 .collect(Collectors.toList());
 
-        bibliographicSourceRepository.saveAll(trabalhos);
-        return trabalhosDto;
+        bibliographicSourceRepository.saveAll(sources);
+        return dtos;
     }
 
-    public String formatarNomesAutores(String autores) {
-        String[] listaAutores = autores.split(";");
-        List<String> nomesFormatados = new ArrayList<>();
+    public String formatAuthorNames(String authors) {
+        String[] authorList = authors.split(";");
+        List<String> formattedNames = new ArrayList<>();
 
-        for (String autor : listaAutores) {
-            String[] partes = autor.trim().split(",");
-            if (partes.length == 2) {
-                nomesFormatados.add(partes[1].trim() + " " + partes[0].trim());
+        for (String author : authorList) {
+            String[] parts = author.trim().split(",");
+            if (parts.length == 2) {
+                formattedNames.add(parts[1].trim() + " " + parts[0].trim());
             } else {
-                nomesFormatados.add(autor.trim());
+                formattedNames.add(author.trim());
             }
         }
-        return String.join(", ", nomesFormatados);
+        return String.join(", ", formattedNames);
     }
 
-    public int parseIntSafe(String valor) {
-        if (valor == null || valor.trim().isEmpty()) {
+    public int parseIntSafe(String value) {
+        if (value == null || value.trim().isEmpty()) {
             return 0;
         }
-        return Integer.parseInt(valor);
+        return Integer.parseInt(value);
     }
 
-    public List<BibliographicSourceDTO> listarTodos() {
+    public List<BibliographicSourceDTO> findAll() {
         return bibliographicSourceRepository.findAll().stream()
                 .map(b -> new BibliographicSourceDTO(
-                        b.getCodigoDoRevisor(), b.getTitulo(), converterAutoresParaDto(b.getAutores()), b.getAno(), b.getReferencia(),
-                        b.getLink(), b.getTipo(), b.getMidia(), b.getLinkDrive(), b.getImagem(), b.getObservacoes(),
-                        b.getPalavraChave(), b.getResumo()
+                        b.getReviewerCode(), b.getTitle(), convertAuthorToDto(b.getAuthors()), b.getYear(), b.getReference(),
+                        b.getUrl(), b.getType(), b.getMedia(), b.getDriveUrl(), b.getImageUrl(), b.getNotes(),
+                        convertKeywordToDto(b.getKeywords()), b.getAbstractText()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public Optional<BibliographicSourceDTO> buscarPorId(String id) {
+    public Optional<BibliographicSourceDTO> findById(Long id) {
         return bibliographicSourceRepository.findById(id)
                 .map(b -> new BibliographicSourceDTO(
-                        b.getCodigoDoRevisor(), b.getTitulo(), converterAutoresParaDto(b.getAutores()), b.getAno(), b.getReferencia(),
-                        b.getLink(), b.getTipo(), b.getMidia(), b.getLinkDrive(), b.getImagem(), b.getObservacoes(),
-                        b.getPalavraChave(), b.getResumo()
+                        b.getReviewerCode(), b.getTitle(), convertAuthorToDto(b.getAuthors()), b.getYear(), b.getReference(),
+                        b.getUrl(), b.getType(), b.getMedia(), b.getDriveUrl(), b.getImageUrl(), b.getNotes(),
+                        convertKeywordToDto(b.getKeywords()), b.getAbstractText()
                 ));
     }
 
-    public BibliographicSourceDTO atualizar(String id, BibliographicSourceDTO bibliographicSourceDto) {
-        BibliographicSource fonte = bibliographicSourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Registro não encontrado."));
+    public BibliographicSourceDTO update(Long id, BibliographicSourceDTO dto) {
+        BibliographicSource source = bibliographicSourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Record not found."));
 
-        fonte.setTitulo(bibliographicSourceDto.getTitulo());
-        fonte.setAutores(converterAutoresDtoParaEntidade(bibliographicSourceDto.getAutores()));
-        fonte.setAno(bibliographicSourceDto.getAno());
-        fonte.setReferencia(bibliographicSourceDto.getReferencia());
-        fonte.setLink(bibliographicSourceDto.getLink());
-        fonte.setTipo(bibliographicSourceDto.getTipo());
-        fonte.setMidia(bibliographicSourceDto.getMidia());
-        fonte.setLinkDrive(bibliographicSourceDto.getLinkDrive());
-        fonte.setImagem(bibliographicSourceDto.getImagem());
-        fonte.setObservacoes(bibliographicSourceDto.getObservacoes());
+        source.setTitle(dto.getTitle());
+        source.setAuthors(convertAuthorDtoToEntity(dto.getAuthors()));
+        source.setYear(dto.getYear());
+        source.setReference(dto.getReference());
+        source.setUrl(dto.getUrl());
+        source.setType(dto.getType());
+        source.setMedia(dto.getMedia());
+        source.setDriveUrl(dto.getDriveUrl());
+        source.setImageUrl(dto.getImageUrl());
+        source.setNotes(dto.getNotes());
+        source.setKeywords(convertKeywordDtoToEntity(dto.getKeywords()));
+        source.setAbstractText(dto.getAbstractText());
 
-        BibliographicSource atualizado = bibliographicSourceRepository.save(fonte);
+        BibliographicSource updated = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
-                atualizado.getCodigoDoRevisor(), atualizado.getTitulo(), converterAutoresParaDto(atualizado.getAutores()), atualizado.getAno(),
-                atualizado.getReferencia(), atualizado.getLink(), atualizado.getTipo(), atualizado.getMidia(),
-                atualizado.getLinkDrive(), atualizado.getImagem(), atualizado.getObservacoes(), atualizado.getPalavraChave(), atualizado.getResumo()
+                updated.getReviewerCode(), updated.getTitle(), convertAuthorToDto(updated.getAuthors()), updated.getYear(),
+                updated.getReference(), updated.getUrl(), updated.getType(), updated.getMedia(),
+                updated.getDriveUrl(), updated.getImageUrl(), updated.getNotes(), convertKeywordToDto(updated.getKeywords()),
+                updated.getAbstractText()
         );
     }
 
-    public BibliographicSourceDTO atualizarParcialmente(String id, BibliographicSourceDTO bibliographicSourceDto) {
-        BibliographicSource fonte = bibliographicSourceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Registro não encontrado."));
+    public BibliographicSourceDTO partialUpdate(Long id, BibliographicSourceDTO dto) {
+        BibliographicSource source = bibliographicSourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Record not found."));
 
-        if (bibliographicSourceDto.getTitulo() != null) fonte.setTitulo(bibliographicSourceDto.getTitulo());
-        if (bibliographicSourceDto.getAutores() != null) fonte.setAutores(converterAutoresDtoParaEntidade(bibliographicSourceDto.getAutores()));
-        if (Objects.nonNull(bibliographicSourceDto.getAno())) fonte.setAno(bibliographicSourceDto.getAno());
-        if (bibliographicSourceDto.getReferencia() != null) fonte.setReferencia(bibliographicSourceDto.getReferencia());
-        if (bibliographicSourceDto.getLink() != null) fonte.setLink(bibliographicSourceDto.getLink());
-        if (bibliographicSourceDto.getTipo() != null) fonte.setTipo(bibliographicSourceDto.getTipo());
-        if (bibliographicSourceDto.getMidia() != null) fonte.setMidia(bibliographicSourceDto.getMidia());
-        if (bibliographicSourceDto.getLinkDrive() != null) fonte.setLinkDrive(bibliographicSourceDto.getLinkDrive());
-        if (bibliographicSourceDto.getImagem() != null) fonte.setImagem(bibliographicSourceDto.getImagem());
-        if (bibliographicSourceDto.getObservacoes() != null) fonte.setObservacoes(bibliographicSourceDto.getObservacoes());
+        if (dto.getTitle() != null) source.setTitle(dto.getTitle());
+        if (dto.getAuthors() != null) source.setAuthors(convertAuthorDtoToEntity(dto.getAuthors()));
+        if (Objects.nonNull(dto.getYear())) source.setYear(dto.getYear());
+        if (dto.getReference() != null) source.setReference(dto.getReference());
+        if (dto.getUrl() != null) source.setUrl(dto.getUrl());
+        if (dto.getType() != null) source.setType(dto.getType());
+        if (dto.getMedia() != null) source.setMedia(dto.getMedia());
+        if (dto.getDriveUrl() != null) source.setDriveUrl(dto.getDriveUrl());
+        if (dto.getImageUrl() != null) source.setImageUrl(dto.getImageUrl());
+        if (dto.getNotes() != null) source.setNotes(dto.getNotes());
+        if (dto.getKeywords() != null) source.setKeywords(convertKeywordDtoToEntity(dto.getKeywords()));
+        if (dto.getAbstractText() != null) source.setAbstractText(dto.getAbstractText());
 
-        BibliographicSource atualizado = bibliographicSourceRepository.save(fonte);
+        BibliographicSource updated = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
-                atualizado.getCodigoDoRevisor(), atualizado.getTitulo(), converterAutoresParaDto(atualizado.getAutores()), atualizado.getAno(),
-                atualizado.getReferencia(), atualizado.getLink(), atualizado.getTipo(), atualizado.getMidia(),
-                atualizado.getLinkDrive(), atualizado.getImagem(), atualizado.getObservacoes(), atualizado.getPalavraChave(), atualizado.getResumo()
+                updated.getReviewerCode(), updated.getTitle(), convertAuthorToDto(updated.getAuthors()), updated.getYear(),
+                updated.getReference(), updated.getUrl(), updated.getType(), updated.getMedia(),
+                updated.getDriveUrl(), updated.getImageUrl(), updated.getNotes(), convertKeywordToDto(updated.getKeywords()), updated.getAbstractText()
         );
     }
 
-    public void deletar(String id) {
+    public void delete(Long id) {
         if (!bibliographicSourceRepository.existsById(id)) {
-            throw new RuntimeException("Registro não encontrado.");
+            throw new RuntimeException("Record not found.");
         }
         bibliographicSourceRepository.deleteById(id);
     }
+
+    public boolean isDuplicate(BibliographicSourceDTO dto) {
+        List<BibliographicSource> checkers = bibliographicSourceRepository
+                .findByTitleAndYearAndAbstractText(
+                        dto.getTitle().trim(),
+                        dto.getYear(),
+                        dto.getAbstractText().trim()
+                );
+
+        for (BibliographicSource checker : checkers) {
+            if (sameAuthors(checker.getAuthors(), dto.getAuthors())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    private boolean sameAuthors(List<Author> entityAuthors, List<AuthorDTO> dtoAuthors) {
+        Set<String> existingAuthorSet = entityAuthors.stream()
+                .map(a -> a.getName().trim().toLowerCase())
+                .collect(Collectors.toCollection(TreeSet::new)); // ordena
+
+        Set<String> dtoAuthorSet = dtoAuthors.stream()
+                .map(a -> a.getName().trim().toLowerCase())
+                .collect(Collectors.toCollection(TreeSet::new)); // ordena
+
+        return existingAuthorSet.equals(dtoAuthorSet);
+    }
+
 }

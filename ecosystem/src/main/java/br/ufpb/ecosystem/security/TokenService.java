@@ -1,7 +1,7 @@
 package br.ufpb.ecosystem.security;
 
-import br.ufpb.ecosystem.entities.UserRole;
 import br.ufpb.ecosystem.entities.User;
+import br.ufpb.ecosystem.entities.UserRole;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -13,12 +13,21 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+/**
+ * Service for handling JWT token generation and validation.
+ */
 @Service
 public class TokenService {
 
     @Value("${api.security.token.secret}")
     private String secret;
 
+    /**
+     * Generates a JWT token for the authenticated user.
+     *
+     * @param user the user for whom the token is generated
+     * @return a signed JWT token string
+     */
     public String generateToken(User user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -33,10 +42,11 @@ public class TokenService {
                     .withClaim("roles", roles)
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
-        } catch (Exception exception) {
-            throw new RuntimeException("Erro ao gerar token", exception);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to generate JWT token", ex);
         }
     }
+
 
     public String validateToken(String token) {
         try {
@@ -46,12 +56,15 @@ public class TokenService {
                     .build()
                     .verify(token)
                     .getSubject();
-        } catch (JWTVerificationException exception) {
-            return null;  // Retorna null se o token for inválido
+        } catch (JWTVerificationException ex) {
+            // You may log this exception for audit/debugging purposes
+            return null;
         }
     }
 
     private Instant genExpirationDate() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now()
+                .plusHours(2)
+                .toInstant(ZoneOffset.of("-03:00")); // Consider making offset configurable
     }
 }
