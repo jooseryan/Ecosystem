@@ -21,7 +21,7 @@ public class BibliographicSource {
     @Column(length = DEFAULT_TEXT_LENGTH)
     private String title;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(
             name = "bibliographic_source_author",
             joinColumns = @JoinColumn(name = "source_id"),

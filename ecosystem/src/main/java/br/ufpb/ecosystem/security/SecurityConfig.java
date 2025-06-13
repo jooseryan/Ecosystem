@@ -40,13 +40,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/register").hasRole("ADMIN") // Consider `.permitAll()` if public registration is needed
+                        .requestMatchers(HttpMethod.POST, "/users/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/users/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/users/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/usuarios/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/users/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/library").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/library/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/library/{id}").hasRole("ADMIN")
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
