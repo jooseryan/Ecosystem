@@ -18,6 +18,7 @@ public class Keyword {
     private String value;
 
     @ManyToMany(mappedBy = "keywords")
+    @JsonIgnore
     private List<BibliographicSource> bibliographicSources;
 
 

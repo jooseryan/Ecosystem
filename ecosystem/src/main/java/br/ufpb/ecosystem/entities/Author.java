@@ -1,5 +1,6 @@
 package br.ufpb.ecosystem.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class Author {
     private String affiliation;
 
     @ManyToMany(mappedBy = "authors")
+    @JsonIgnore
     private List<BibliographicSource> bibliographicSources = new ArrayList<>();
 
     // Getters and Setters

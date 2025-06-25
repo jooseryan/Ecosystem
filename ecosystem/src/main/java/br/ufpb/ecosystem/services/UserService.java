@@ -33,9 +33,6 @@ public class UserService implements UserDetailsService {
         createDefaultRoleIfNotExists();
     }
 
-    /**
-     * Ensures the default role exists (e.g., ROLE_USER).
-     */
     private void createDefaultRoleIfNotExists() {
         roleRepository.findByRole("ROLE_USER").orElseGet(() -> {
             UserRole defaultRole = new UserRole();
@@ -44,9 +41,6 @@ public class UserService implements UserDetailsService {
         });
     }
 
-    /**
-     * Registers a new user.
-     */
     public User registerUser(UserDTO userDTO) {
         if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new RuntimeException("User already exists.");
@@ -71,9 +65,6 @@ public class UserService implements UserDetailsService {
         return userRepository.save(newUser);
     }
 
-    /**
-     * Authenticates a user by username and password.
-     */
     public User loginUser(UserDTO userDTO) {
         User user = userRepository.findByUsername(userDTO.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -85,9 +76,6 @@ public class UserService implements UserDetailsService {
         return user;
     }
 
-    /**
-     * Required by Spring Security to load user by username.
-     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
@@ -100,24 +88,15 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    /**
-     * Lists all users.
-     */
     public List<User> listAllUsers() {
         return userRepository.findAll();
     }
 
-    /**
-     * Fetches a user by their ID.
-     */
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
     }
 
-    /**
-     * Fully updates an existing user.
-     */
     public User updateUser(Long id, UserDTO userDTO) {
         User existingUser = getUserById(id);
         existingUser.setUsername(userDTO.getUsername());
@@ -134,9 +113,6 @@ public class UserService implements UserDetailsService {
         return userRepository.save(existingUser);
     }
 
-    /**
-     * Partially updates a user (PATCH).
-     */
     public User updateUserPartially(Long id, UserDTO userDTO) {
         User existingUser = getUserById(id);
 
@@ -159,9 +135,6 @@ public class UserService implements UserDetailsService {
         return userRepository.save(existingUser);
     }
 
-    /**
-     * Deletes a user by ID.
-     */
     public void deleteUser(Long id) {
         User user = getUserById(id);
         userRepository.delete(user);

@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/library").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/library/{id}").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/library/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/library/search").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

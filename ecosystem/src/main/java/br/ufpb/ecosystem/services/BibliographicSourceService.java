@@ -33,10 +33,9 @@ public class BibliographicSourceService {
 
         return authorDtos.stream()
                 .map(dto -> {
-                    Optional<Author> existing = authorRepository.findByEmail(dto.getEmail());
+                    Optional<Author> existing = authorRepository.findByName(dto.getName());
                     return existing.orElseGet(() -> {
                         Author newAuthor = new Author();
-                        newAuthor.setId(dto.getId());
                         newAuthor.setName(dto.getName());
                         newAuthor.setEmail(dto.getEmail());
                         newAuthor.setOrcid(dto.getOrcid());
@@ -80,9 +79,7 @@ public class BibliographicSourceService {
     }
 
     public BibliographicSourceDTO insert(BibliographicSourceDTO dto) {
-        if (isDuplicate(dto)) {
-            throw new IllegalArgumentException("Este trabalho já foi registrado.");
-        }
+
         List<Author> authors = convertAuthorDtoToEntity(dto.getAuthors());
         List<Keyword> keywords = convertKeywordDtoToEntity(dto.getKeywords());
 
@@ -227,25 +224,6 @@ public class BibliographicSourceService {
 
         bibliographicSourceRepository.deleteById(id);
     }
-
-
-    public boolean isDuplicate(BibliographicSourceDTO dto) {
-        List<BibliographicSource> checkers = bibliographicSourceRepository
-                .findByTitleAndYearAndAbstractText(
-                        dto.getTitle().trim(),
-                        dto.getYear(),
-                        dto.getAbstractText().trim()
-                );
-
-        for (BibliographicSource checker : checkers) {
-            if (sameAuthors(checker.getAuthors(), dto.getAuthors())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     private boolean sameAuthors(List<Author> entityAuthors, List<AuthorDTO> dtoAuthors) {
         Set<String> existingAuthorSet = entityAuthors.stream()
