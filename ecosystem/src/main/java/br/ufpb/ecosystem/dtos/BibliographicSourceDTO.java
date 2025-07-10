@@ -1,6 +1,5 @@
 package br.ufpb.ecosystem.dtos;
 
-import br.ufpb.ecosystem.entities.Keyword;
 import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Type;
 import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Media;
 
@@ -8,7 +7,8 @@ import java.util.List;
 
 public class BibliographicSourceDTO {
 
-    private String code;
+    private Long id;
+    private String reviewerCode;
     private String title;
     private List<AuthorDTO> authors;
     private int year;
@@ -24,10 +24,11 @@ public class BibliographicSourceDTO {
 
     public BibliographicSourceDTO() {}
 
-    public BibliographicSourceDTO(String code, String title, List<AuthorDTO> authors, int year, String reference, String url,
+    public BibliographicSourceDTO(Long id, String reviewerCode, String title, List<AuthorDTO> authors, int year, String reference, String url,
                                   Type type, Media media, String driveUrl, String imageUrl, String notes,
                                   List<KeywordDTO> keywords, String abstractText) {
-        this.code = code;
+        this.id = id;
+        this.reviewerCode = reviewerCode;
         this.title = title;
         this.authors = authors;
         this.year = year;
@@ -42,12 +43,20 @@ public class BibliographicSourceDTO {
         this.abstractText = abstractText;
     }
 
-    public String getCode() {
-        return code;
+    public Long getId() {
+        return id;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getReviewerCode() {
+        return reviewerCode;
+    }
+
+    public void setReviewerCode(String reviewerCode) {
+        this.reviewerCode = reviewerCode;
     }
 
     public String getTitle() {

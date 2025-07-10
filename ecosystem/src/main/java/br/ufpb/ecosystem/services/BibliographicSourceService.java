@@ -6,9 +6,13 @@ import br.ufpb.ecosystem.dtos.KeywordDTO;
 import br.ufpb.ecosystem.entities.Author;
 import br.ufpb.ecosystem.entities.BibliographicSource;
 import br.ufpb.ecosystem.entities.Keyword;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum;
 import br.ufpb.ecosystem.repositories.AuthorRepository;
 import br.ufpb.ecosystem.repositories.BibliographicSourceRepository;
 import br.ufpb.ecosystem.repositories.KeywordRepository;
+import br.ufpb.ecosystem.specification.BibliographicSourceSpecs;
+import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,11 +35,11 @@ public class BibliographicSourceService {
         if (authorDtos == null) return new ArrayList<>();
 
         return authorDtos.stream()
+                .filter(dto -> dto.getName() != null && !dto.getName().isBlank())
                 .map(dto -> {
-                    Optional<Author> existing = authorRepository.findByEmail(dto.getEmail());
+                    Optional<Author> existing = authorRepository.findByName(dto.getName());
                     return existing.orElseGet(() -> {
                         Author newAuthor = new Author();
-                        newAuthor.setId(dto.getId());
                         newAuthor.setName(dto.getName());
                         newAuthor.setEmail(dto.getEmail());
                         newAuthor.setOrcid(dto.getOrcid());
@@ -79,15 +83,13 @@ public class BibliographicSourceService {
     }
 
     public BibliographicSourceDTO insert(BibliographicSourceDTO dto) {
-        if (isDuplicate(dto)) {
-            throw new IllegalArgumentException("Este trabalho já foi registrado.");
-        }
+
         List<Author> authors = convertAuthorDtoToEntity(dto.getAuthors());
         List<Keyword> keywords = convertKeywordDtoToEntity(dto.getKeywords());
 
 
         BibliographicSource source = new BibliographicSource(
-                dto.getCode(), dto.getTitle(), authors, dto.getYear(),
+                dto.getReviewerCode(), dto.getTitle(), authors, dto.getYear(),
                 dto.getReference(), dto.getUrl(), dto.getType(), dto.getMedia(),
                 dto.getDriveUrl(), dto.getImageUrl(), dto.getNotes(), keywords, dto.getAbstractText()
         );
@@ -95,16 +97,16 @@ public class BibliographicSourceService {
         BibliographicSource saved = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
-                saved.getReviewerCode(), saved.getTitle(), convertAuthorToDto(saved.getAuthors()), saved.getYear(),
-                saved.getReference(), saved.getUrl(), saved.getType(), saved.getMedia(),
-                saved.getDriveUrl(), saved.getImageUrl(), saved.getNotes(), convertKeywordToDto(saved.getKeywords()), saved.getAbstractText()
+                saved.getId(), saved.getReviewerCode(), saved.getTitle(), convertAuthorToDto(saved.getAuthors()), saved.getYear(),
+                saved.getReference(), saved.getUrl(), saved.getType(), saved.getMedia(), saved.getDriveUrl(),
+                saved.getImageUrl(), saved.getNotes(), convertKeywordToDto(saved.getKeywords()), saved.getAbstractText()
         );
     }
 
     private List<BibliographicSourceDTO> saveAllToDatabase(List<BibliographicSourceDTO> dtos) {
         List<BibliographicSource> sources = dtos.stream()
                 .map(dto -> new BibliographicSource(
-                        dto.getCode(), dto.getTitle(), convertAuthorDtoToEntity(dto.getAuthors()), dto.getYear(),
+                        dto.getReviewerCode(), dto.getTitle(), convertAuthorDtoToEntity(dto.getAuthors()), dto.getYear(),
                         dto.getReference(), dto.getUrl(), dto.getType(), dto.getMedia(),
                         dto.getDriveUrl(), dto.getImageUrl(), dto.getNotes(), convertKeywordDtoToEntity(dto.getKeywords()), dto.getAbstractText()
                 ))
@@ -139,6 +141,7 @@ public class BibliographicSourceService {
     public List<BibliographicSourceDTO> findAll() {
         return bibliographicSourceRepository.findAll().stream()
                 .map(b -> new BibliographicSourceDTO(
+                        b.getId(),
                         b.getReviewerCode(), b.getTitle(), convertAuthorToDto(b.getAuthors()), b.getYear(), b.getReference(),
                         b.getUrl(), b.getType(), b.getMedia(), b.getDriveUrl(), b.getImageUrl(), b.getNotes(),
                         convertKeywordToDto(b.getKeywords()), b.getAbstractText()
@@ -149,6 +152,7 @@ public class BibliographicSourceService {
     public Optional<BibliographicSourceDTO> findById(Long id) {
         return bibliographicSourceRepository.findById(id)
                 .map(b -> new BibliographicSourceDTO(
+                        b.getId(),
                         b.getReviewerCode(), b.getTitle(), convertAuthorToDto(b.getAuthors()), b.getYear(), b.getReference(),
                         b.getUrl(), b.getType(), b.getMedia(), b.getDriveUrl(), b.getImageUrl(), b.getNotes(),
                         convertKeywordToDto(b.getKeywords()), b.getAbstractText()
@@ -160,6 +164,7 @@ public class BibliographicSourceService {
                 .orElseThrow(() -> new RuntimeException("Record not found."));
 
         source.setTitle(dto.getTitle());
+        source.setReviewerCode(dto.getReviewerCode());
         source.setAuthors(convertAuthorDtoToEntity(dto.getAuthors()));
         source.setYear(dto.getYear());
         source.setReference(dto.getReference());
@@ -175,6 +180,7 @@ public class BibliographicSourceService {
         BibliographicSource updated = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
+                updated.getId(),
                 updated.getReviewerCode(), updated.getTitle(), convertAuthorToDto(updated.getAuthors()), updated.getYear(),
                 updated.getReference(), updated.getUrl(), updated.getType(), updated.getMedia(),
                 updated.getDriveUrl(), updated.getImageUrl(), updated.getNotes(), convertKeywordToDto(updated.getKeywords()),
@@ -187,6 +193,7 @@ public class BibliographicSourceService {
                 .orElseThrow(() -> new RuntimeException("Record not found."));
 
         if (dto.getTitle() != null) source.setTitle(dto.getTitle());
+        if (dto.getReviewerCode() != null) source.setReviewerCode(dto.getReviewerCode());
         if (dto.getAuthors() != null) source.setAuthors(convertAuthorDtoToEntity(dto.getAuthors()));
         if (Objects.nonNull(dto.getYear())) source.setYear(dto.getYear());
         if (dto.getReference() != null) source.setReference(dto.getReference());
@@ -202,36 +209,25 @@ public class BibliographicSourceService {
         BibliographicSource updated = bibliographicSourceRepository.save(source);
 
         return new BibliographicSourceDTO(
+                updated.getId(),
                 updated.getReviewerCode(), updated.getTitle(), convertAuthorToDto(updated.getAuthors()), updated.getYear(),
                 updated.getReference(), updated.getUrl(), updated.getType(), updated.getMedia(),
                 updated.getDriveUrl(), updated.getImageUrl(), updated.getNotes(), convertKeywordToDto(updated.getKeywords()), updated.getAbstractText()
         );
     }
 
+    @Transactional
     public void delete(Long id) {
-        if (!bibliographicSourceRepository.existsById(id)) {
-            throw new RuntimeException("Record not found.");
-        }
+        BibliographicSource source = bibliographicSourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Record not found."));
+
+        source.getAuthors().clear();
+        source.getKeywords().clear();
+
+        bibliographicSourceRepository.save(source);
+
         bibliographicSourceRepository.deleteById(id);
     }
-
-    public boolean isDuplicate(BibliographicSourceDTO dto) {
-        List<BibliographicSource> checkers = bibliographicSourceRepository
-                .findByTitleAndYearAndAbstractText(
-                        dto.getTitle().trim(),
-                        dto.getYear(),
-                        dto.getAbstractText().trim()
-                );
-
-        for (BibliographicSource checker : checkers) {
-            if (sameAuthors(checker.getAuthors(), dto.getAuthors())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     private boolean sameAuthors(List<Author> entityAuthors, List<AuthorDTO> dtoAuthors) {
         Set<String> existingAuthorSet = entityAuthors.stream()
@@ -243,6 +239,17 @@ public class BibliographicSourceService {
                 .collect(Collectors.toCollection(TreeSet::new)); // ordena
 
         return existingAuthorSet.equals(dtoAuthorSet);
+    }
+
+    public List<BibliographicSource> search(String title, String authorName, Integer year, BibliographicSourceEnum.Type type, BibliographicSourceEnum.Media media) {
+        Specification<BibliographicSource> spec = Specification
+                .where(BibliographicSourceSpecs.titleContains(title))
+                .and(BibliographicSourceSpecs.authorNameContains(authorName))
+                .and(BibliographicSourceSpecs.yearEquals(year))
+                .and(BibliographicSourceSpecs.typeEquals(type))
+                .and(BibliographicSourceSpecs.mediaEquals(media));
+
+        return bibliographicSourceRepository.findAll(spec);
     }
 
 }

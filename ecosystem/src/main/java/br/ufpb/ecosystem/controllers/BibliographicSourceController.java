@@ -11,6 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import br.ufpb.ecosystem.entities.BibliographicSource;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Type;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum.Media;
+import br.ufpb.ecosystem.services.BibliographicSourceService;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -109,4 +114,16 @@ public class BibliographicSourceController {
         bibliographicSourceService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping("/search")
+    public List<BibliographicSource> search(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Type type,
+            @RequestParam(required = false) Media media
+    ) {
+        return bibliographicSourceService.search(title, author, year, type, media);
+    }
+
 }
