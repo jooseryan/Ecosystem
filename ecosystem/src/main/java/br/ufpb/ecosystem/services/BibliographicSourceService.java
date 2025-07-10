@@ -6,10 +6,13 @@ import br.ufpb.ecosystem.dtos.KeywordDTO;
 import br.ufpb.ecosystem.entities.Author;
 import br.ufpb.ecosystem.entities.BibliographicSource;
 import br.ufpb.ecosystem.entities.Keyword;
+import br.ufpb.ecosystem.enums.BibliographicSourceEnum;
 import br.ufpb.ecosystem.repositories.AuthorRepository;
 import br.ufpb.ecosystem.repositories.BibliographicSourceRepository;
 import br.ufpb.ecosystem.repositories.KeywordRepository;
+import br.ufpb.ecosystem.specification.BibliographicSourceSpecs;
 import jakarta.transaction.Transactional;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +35,7 @@ public class BibliographicSourceService {
         if (authorDtos == null) return new ArrayList<>();
 
         return authorDtos.stream()
+                .filter(dto -> dto.getName() != null && !dto.getName().isBlank())
                 .map(dto -> {
                     Optional<Author> existing = authorRepository.findByName(dto.getName());
                     return existing.orElseGet(() -> {
@@ -235,6 +239,17 @@ public class BibliographicSourceService {
                 .collect(Collectors.toCollection(TreeSet::new)); // ordena
 
         return existingAuthorSet.equals(dtoAuthorSet);
+    }
+
+    public List<BibliographicSource> search(String title, String authorName, Integer year, BibliographicSourceEnum.Type type, BibliographicSourceEnum.Media media) {
+        Specification<BibliographicSource> spec = Specification
+                .where(BibliographicSourceSpecs.titleContains(title))
+                .and(BibliographicSourceSpecs.authorNameContains(authorName))
+                .and(BibliographicSourceSpecs.yearEquals(year))
+                .and(BibliographicSourceSpecs.typeEquals(type))
+                .and(BibliographicSourceSpecs.mediaEquals(media));
+
+        return bibliographicSourceRepository.findAll(spec);
     }
 
 }

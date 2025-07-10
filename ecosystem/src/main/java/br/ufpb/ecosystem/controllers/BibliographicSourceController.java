@@ -114,4 +114,16 @@ public class BibliographicSourceController {
         bibliographicSourceService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @GetMapping("/search")
+    public List<BibliographicSource> search(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Type type,
+            @RequestParam(required = false) Media media
+    ) {
+        return bibliographicSourceService.search(title, author, year, type, media);
+    }
+
 }
