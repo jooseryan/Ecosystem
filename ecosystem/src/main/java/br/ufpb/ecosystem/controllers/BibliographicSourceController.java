@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,8 +55,10 @@ public class BibliographicSourceController {
     @ApiResponse(responseCode = "200", description = "List of academic works successfully retrieved.")
     @ApiResponse(responseCode = "204", description = "No academic works found.")
     @ApiResponse(responseCode = "500", description = "Internal server error while retrieving data.")
-    public ResponseEntity<List<BibliographicSourceDTO>> findAll() {
-        List<BibliographicSourceDTO> works = bibliographicSourceService.findAll();
+    public ResponseEntity<Page<BibliographicSourceDTO>> findAll(
+            @RequestParam (defaultValue = "0") int page,
+            @RequestParam (defaultValue = "10") int itens) {
+        Page<BibliographicSourceDTO> works = bibliographicSourceService.findAll(page, itens);
         if (works.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

@@ -12,6 +12,9 @@ import br.ufpb.ecosystem.repositories.BibliographicSourceRepository;
 import br.ufpb.ecosystem.repositories.KeywordRepository;
 import br.ufpb.ecosystem.specification.BibliographicSourceSpecs;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +57,7 @@ public class BibliographicSourceService {
         if (keywordDtos == null) return new ArrayList<>();
 
         return keywordDtos.stream()
+                .filter(dto -> dto.getValue() != null && !dto.getValue().trim().isEmpty())
                 .map(dto -> {
                     Optional<Keyword> existing = keywordRepository.findByValue(dto.getValue());
                     return existing.orElseGet(() -> {
@@ -138,15 +142,16 @@ public class BibliographicSourceService {
         return Integer.parseInt(value);
     }
 
-    public List<BibliographicSourceDTO> findAll() {
-        return bibliographicSourceRepository.findAll().stream()
+    public Page<BibliographicSourceDTO> findAll(int page, int itens) {
+        Pageable pageable = PageRequest.of(page, itens);
+
+        return bibliographicSourceRepository.findAll(pageable)
                 .map(b -> new BibliographicSourceDTO(
                         b.getId(),
                         b.getReviewerCode(), b.getTitle(), convertAuthorToDto(b.getAuthors()), b.getYear(), b.getReference(),
                         b.getUrl(), b.getType(), b.getMedia(), b.getDriveUrl(), b.getImageUrl(), b.getNotes(),
                         convertKeywordToDto(b.getKeywords()), b.getAbstractText()
-                ))
-                .collect(Collectors.toList());
+                ));
     }
 
     public Optional<BibliographicSourceDTO> findById(Long id) {
@@ -251,5 +256,4 @@ public class BibliographicSourceService {
 
         return bibliographicSourceRepository.findAll(spec);
     }
-
 }
